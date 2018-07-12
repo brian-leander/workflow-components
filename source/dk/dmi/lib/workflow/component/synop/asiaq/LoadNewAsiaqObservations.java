@@ -50,9 +50,9 @@ public class LoadNewAsiaqObservations extends BaseComponent {
 			Map<String, Set<Long>> minMax = new HashMap<>();
 	 				
 			String sqlLoadNewObservations = 
-					"select da.id, da.observation_type, da.observation_interval, da.value, da.observation_time, sa.dmi_station_number, sa.asiaq_station_number from data_asiaq_history da "
+					"select da.id, da.observation_type, da.observation_interval, da.value, da.observation_time, sa.dmi_station_number, sa.asiaq_station_number from data_asiaq da "
 							+ "join station_asiaq sa on sa.asiaq_station_number=da.asiaq_station_id "
-							+ "where da.sent_to_production=0 order by da.observation_time ";
+							+ "where da.sent_to_production=0 order by da.observation_time";		
 			final ResultSet observations = statement.executeQuery(sqlLoadNewObservations);			
 			while (observations.next()) {
 				int idIndex = observations.findColumn("id");			
@@ -157,7 +157,7 @@ public class LoadNewAsiaqObservations extends BaseComponent {
 					int interval = 12;
 					
 					// loop max min temp
-					sqlLoadMinMaxTemperatureObservations += "SELECT max(cast(value AS decimal(5,1))) as mxValue, min(cast(value AS decimal(5,1))) as minValue, t.id, t.asiaq_station_id, t.observation_type, "+interval+" as observation_interval, FROM_UNIXTIME("+observationTime+") as observation_time, sa.dmi_station_number FROM data_asiaq_history t"+
+					sqlLoadMinMaxTemperatureObservations += "SELECT max(cast(value AS decimal(5,1))) as mxValue, min(cast(value AS decimal(5,1))) as minValue, t.id, t.asiaq_station_id, t.observation_type, "+interval+" as observation_interval, FROM_UNIXTIME("+observationTime+") as observation_time, sa.dmi_station_number FROM data_asiaq t"+ 
 							" join station_asiaq sa on sa.asiaq_station_number=t.asiaq_station_id"+ 
 							" WHERE (t.observation_type like 'ATM%' or t.observation_type like 'ATN%') "+
 							" and t.observation_time BETWEEN DATE_ADD(FROM_UNIXTIME("+observationTime+"),INTERVAL -"+interval+" HOUR) AND FROM_UNIXTIME("+observationTime+")"+
@@ -219,9 +219,9 @@ public class LoadNewAsiaqObservations extends BaseComponent {
 				observationTime /= 1000;
 				sqlLoadAccumulatedPrecipitationObservations += 
 						"SELECT sum(t.value) as value, t.observation_type, "+interval+" as observation_interval , FROM_UNIXTIME("+observationTime+") as observation_time, sa.dmi_station_number"+
-							" FROM data_asiaq_history t"+
+							" FROM data_asiaq t"+
 							" join station_asiaq sa on sa.asiaq_station_number=t.asiaq_station_id"+
-							" WHERE t.observation_type like 'PRE%'"+ // 'PRE%' changed from 'PRE2016'
+							" WHERE t.observation_type = 'PRE2016'"+
 							" and t.observation_time BETWEEN DATE_ADD(FROM_UNIXTIME("+observationTime+"),INTERVAL -"+interval+" HOUR) AND FROM_UNIXTIME("+observationTime+")"+
 							" and sa.asiaq_station_number='"+stationNo+"'" +
 							" group by t.asiaq_station_id";
@@ -273,9 +273,6 @@ public class LoadNewAsiaqObservations extends BaseComponent {
 		}
 		if (parameterName.startsWith("AT") && observationInterval == 60) {
 			return Observation.forCurrentTemperature(stationNo, timestamp, value);
-		}
-		if (parameterName.startsWith("RH") && observationInterval == 60) { // temp inserted for historic data import
-			return Observation.forHumidityHour(stationNo, timestamp, value);
 		}
 		if (parameterName.startsWith("RH") && observationInterval == 10) {
 			return Observation.forHumidity10Minutes(stationNo, timestamp, value);

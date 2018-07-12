@@ -36,7 +36,7 @@ public class ValidateObservationData extends BaseComponent {
 			String stationId = observationsWithType.get(0).getStationNo();
 	 				
 			String sqlLoadNewObservations = 
-					"select observation_type, observation_interval, observation_time from data_asiaq_history"
+					"select observation_type, observation_interval, observation_time from data_asiaq"							
 							+ " where asiaq_station_id = '"+stationId+"'"
 							+ " and observation_time between FROM_UNIXTIME("+minTimestamp+") and FROM_UNIXTIME("+maxTimestamp+");";		
 			final ResultSet observations = statement.executeQuery(sqlLoadNewObservations);			

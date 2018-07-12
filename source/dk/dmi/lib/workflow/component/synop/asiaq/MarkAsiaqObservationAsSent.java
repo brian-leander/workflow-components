@@ -29,7 +29,7 @@ public class MarkAsiaqObservationAsSent extends BaseComponent {
 			Connection connection = DriverManager.getConnection("jdbc:mysql://obs6/obs1_2", "oman", "2Wild!");
 			connection.setAutoCommit(false);
 
-			String sqlUpdate = "UPDATE data_asiaq_history SET sent_to_production=? WHERE id=?";
+			String sqlUpdate = "UPDATE data_asiaq SET sent_to_production=? WHERE id=?";
 			PreparedStatement statementData = connection.prepareStatement(sqlUpdate);
 			
 			for (Integer id : observationIds) {				
@@ -41,12 +41,12 @@ public class MarkAsiaqObservationAsSent extends BaseComponent {
 			
 			statementData.executeBatch();			
 			
-//			final Statement statementFiles = connection.createStatement();
-//			statementFiles.executeUpdate("UPDATE data_asiaq_history SET sent_to_production=2 WHERE sent_to_production=0;");
+			final Statement statementFiles = connection.createStatement();
+			statementFiles.executeUpdate("UPDATE data_asiaq SET sent_to_production=2 WHERE sent_to_production=0;");
 
 			connection.commit();
 			statementData.close();
-//			statementFiles.close();
+			statementFiles.close();			
 			connection.close();
 			
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {

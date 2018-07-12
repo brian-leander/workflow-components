@@ -37,7 +37,7 @@ public class ValidateAsiaqDataFile extends BaseComponent {
 			final Connection connection = DriverManager.getConnection("jdbc:mysql://obs6/obs1_2", "oman", "2Wild!");
 			final Statement stmt = connection.createStatement();
 						
-			final ResultSet result = stmt.executeQuery("select * from obs1_2.data_asiaq_file_history where file_name='" + fileName + "'");
+			final ResultSet result = stmt.executeQuery("select * from obs1_2.data_asiaq_file where file_name='" + fileName + "'");
 			
 			// if record exists this is duplicate ... or replacement ????
 			if (result.next()) {				

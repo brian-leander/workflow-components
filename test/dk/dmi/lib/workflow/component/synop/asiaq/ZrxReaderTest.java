@@ -152,11 +152,5 @@ public class ZrxReaderTest {
 		
 		Assert.assertEquals(41, observations.size());
 	}
-
-	@Test
-	public void testKnots()  {
-		float y = 1.943844f * Float.parseFloat("8.3");
-		long x = Math.round(y);
-		Assert.assertEquals(16, x);
-	}
+	
 }

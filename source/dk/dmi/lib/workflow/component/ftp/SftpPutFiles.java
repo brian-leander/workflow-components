@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.Optional;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -56,7 +55,7 @@ public class SftpPutFiles extends BaseComponent {
 			String password = serverInfo.get("password"); 
 			String filesPath = serverInfo.get("filesPath"); 
 			String filesProcessedPath = serverInfo.get("filesProcessedPath");
-			Optional<String> fileType = Optional.ofNullable(serverInfo.get("fileType"));
+			String fileType = serverInfo.get("fileType");
 			String ftpServerOutputPath = serverInfo.get("ftpServerOutputPath");
 			
 			session = client.getSession(username, ftpServer, FTP_PORT);           
@@ -75,8 +74,8 @@ public class SftpPutFiles extends BaseComponent {
 				for (Path fileEntry: stream) {
 			        Path fileName = fileEntry.getFileName();
 			    			        
-			        if (fileType.isPresent()) {
-			        	if (!fileName.toString().endsWith(fileType.get())) {
+			        if (fileType != null && !"".equals(fileType)) {
+			        	if (!fileName.toString().endsWith(fileType)) {
 			        		continue;
 			        	}
 			        }

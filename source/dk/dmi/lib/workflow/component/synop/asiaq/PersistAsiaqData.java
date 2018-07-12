@@ -41,7 +41,7 @@ public class PersistAsiaqData extends BaseComponent {
 			argumentDescriptions = {"File name", "File Content", "Asiaq observation data."})
 	public boolean execute(String fileName, String zrxObservation, List<ObservationWithType> observations) {
 		
-		//long utcUnixTime = getProductionTime(fileName, zrxObservation);
+		long utcUnixTime = getProductionTime(fileName, zrxObservation);
 		
 		Connection connection = null;
 		try {
@@ -53,23 +53,22 @@ public class PersistAsiaqData extends BaseComponent {
 
 			LOGGER.debug("Saving file info for " + fileName + " to obs1_2.data_asiaq_file");
 
-			statementFiles.executeUpdate("INSERT INTO obs1_2.data_asiaq_file_history (created, file_name, data, supplier, production_time, observation_time) VALUES(" +
+			statementFiles.executeUpdate("INSERT INTO obs1_2.data_asiaq_file (created, file_name, data, supplier, production_time, observation_time) VALUES(" +
 					"FROM_UNIXTIME(" + System.currentTimeMillis() / 1000 + ")," +
 					"'" + fileName + "'," +					
-					"''," +
+					"'" + zrxObservation + "'," +
 					"'ASIAQ'," +
-					//"FROM_UNIXTIME(" + utcUnixTime + ")," +
-					"null," +
+					"FROM_UNIXTIME(" + utcUnixTime + ")," +
 					"FROM_UNIXTIME(" + observations.get(0).getUtcUnixTimeStamp() + ")"+
 					" )");
 
-			LOGGER.debug("Saving observations from file " + fileName + " to obs1_2.data_asiaq - count: " + observations.size());
+			LOGGER.debug("Saving observations from file " + fileName + " to obs1_2.data_asiaq");			
 
-			String sql = "INSERT INTO obs1_2.data_asiaq_history (created, asiaq_station_id, " +
+			String sql = "INSERT INTO obs1_2.data_asiaq (created, asiaq_station_id, " + 
 					"observation_type, observation_interval, value, observation_time, unit, id) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 			
 			PreparedStatement statementData = connection.prepareStatement(sql);
-			int x = 0;
+			
 			for (ObservationWithType observationWithTypeData : observations) {
 				long id = UniqueIdentifierGenerator.generateNewId(true);
 				observationWithTypeData.setId(id);
@@ -82,16 +81,9 @@ public class PersistAsiaqData extends BaseComponent {
 				statementData.setTimestamp(6, new Timestamp(observationWithTypeData.getUtcUnixTimeStamp() * 1000));
 				statementData.setString(7, observationWithTypeData.getUnit());				
 				statementData.setLong(8, id);							
-				statementData.addBatch();
-
-				if (x%10000 == 0) {
-					LOGGER.info("going..." + x);
-					statementData.executeBatch();
-					connection.commit();
-				}
-				x++;
+				statementData.addBatch();				
 			}
-
+			
 			statementData.executeBatch();
 			connection.commit();
 			

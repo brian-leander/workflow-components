@@ -1,16 +1,20 @@
 package dk.dmi.lib.workflow.component.synop.asiaq;
 
-import dk.dmi.lib.common.DateUtils;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingFormatArgumentException;
+
 import dk.dmi.lib.persistence.database.processdb.publicc.controller.WorkflowContextController;
 import dk.dmi.lib.workflow.common.BaseComponent;
 import dk.dmi.lib.workflow.common.WorkflowAnnotations.Component;
 import dk.dmi.lib.workflow.common.WorkflowAnnotations.ExecuteMethod;
 import dk.dmi.lib.workflow.common.WorkflowAnnotations.InjectContextControllerMethod;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingFormatArgumentException;
 
 @Component(
 		name = "Parse ZRX file", 
@@ -100,7 +104,7 @@ public class ParseZrxData extends BaseComponent {
 					
 					String[] observationRecords = lines[lineNo].trim().split(" ");
 					
-					long utcUnixTimeStamp = DateUtils.getUtcDateTime(observationRecords[0], timeZone, DATE_FORMAT).toEpochSecond();
+					long utcUnixTimeStamp = getUtcDateTime(observationRecords[0], timeZone, DATE_FORMAT);
 					
 					String value = observationRecords[1];
 					if (!value.equals(invalidValue)) {				
@@ -163,4 +167,19 @@ public class ParseZrxData extends BaseComponent {
 		return "";
 	}
 
+	private long getUtcDateTime(String dateTime, String timeZone, String DATE_TIME_PATTERN) {				
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
+		LocalDateTime date = LocalDateTime.parse(dateTime, formatter);			
+		ZonedDateTime zonedDateTime = ZonedDateTime.of(
+				date.getYear(), 
+				date.getMonthValue(), 
+				date.getDayOfMonth(), 
+				date.getHour(), 
+				date.getMinute(), 
+				date.getSecond(), 
+				0, ZoneId.of(timeZone));
+		
+		ZonedDateTime utcDate = zonedDateTime.withZoneSameInstant(ZoneOffset.UTC);
+		return utcDate.toEpochSecond();		
+	}	
 }
